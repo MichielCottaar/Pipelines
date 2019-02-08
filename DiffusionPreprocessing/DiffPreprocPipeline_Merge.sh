@@ -251,14 +251,11 @@ main()
     # Establish tool name for logging
     log_SetToolName "${SCRIPT_NAME}"
 
-    outdir=${StudyFolder}/${Subject}/T1w/${OutputName}
+    split_names=`echo ${InputNames} | sed 's/@/ /g'`
 
-    indirs=`echo ${InputNames} | sed 's/@/ /g'`
-    indirs=`printf "${StudyFolder}/${Subject}/T1w/%s " ${indirs}`
+    log_Msg "merging ${split_names} into ${OutputName}"
 
-    log_Msg "merging ${indirs} into ${outdir}"
-
-    ${runcmd} ${HCPPIPEDIR_dMRI}/merge_split.sh ${outdir} ${indirs}
+    ${runcmd} ${HCPPIPEDIR_dMRI}/merge_split.sh ${StudyFolder} ${Subject} ${OutputName} ${split_names}
 }
 
 

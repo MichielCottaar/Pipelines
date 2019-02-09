@@ -17,8 +17,7 @@ T1wFolder="${StudyFolder}/${Subject}/T1w" #Location of T1w images
 FinalDirectory=${T1wFolder}/${OutDWIName}
 for dwi_name in ${InDWINames} ; do
     in_dir=${T1wFolder}/${dwi_name}
-    #${FSLDIR}/bin/select_dwi_vols ${in_dir}/data ${in_dir}/bvals ${in_dir}/b0 0 -m
-    echo ${FSLDIR}/bin/fslroi ${in_dir}/data ${in_dir}/b0 0 1
+    ${FSLDIR}/bin/select_dwi_vols ${in_dir}/data ${in_dir}/bvals ${in_dir}/b0 0 -m
 done
 
 mkdir -p ${FinalDirectory}
@@ -26,40 +25,40 @@ cmd="${FSLDIR}/bin/fsladd ${FinalDirectory}/ref_b0 -m"
 for dwi_name in ${InDWINames} ; do
     cmd+=" ${T1wFolder}/${dwi_name}/b0"
 done
-echo ${cmd}
+${cmd}
 
 
 for dwi_name in ${InDWINames} ; do
     in_dir=${T1wFolder}/${dwi_name}
-    echo ${FSLDIR}/bin/flirt -in ${in_dir}/b0 -ref ${FinalDirectory}/ref_b0 -omat ${in_dir}/str2mean.mat -dof 6
+    ${FSLDIR}/bin/flirt -in ${in_dir}/b0 -ref ${FinalDirectory}/ref_b0 -omat ${in_dir}/str2mean.mat -dof 6
 
     # apply new transform to un-transformed diffusion data
 	UntransformedDir=${StudyFolder}/${Subject}/${dwi_name}
     ${FSLDIR}/bin/convert_xfm -omat ${UntransformedDir}/reg/diff2mean.mat -concat ${UntransformedDir}/reg/diff2str.mat ${in_dir}/str2mean.mat
 
     echo "Applying transfomation to mean space for ${dwi_name}"
-	DiffRes=`${FSLDIR}/bin/fslval ${UntransformedDir}/data/data pixdim1`
-	DiffRes=`printf "%0.2f" ${DiffRes}`
-	mkdir -p ${in_dir}_mean
+    DiffRes=`${FSLDIR}/bin/fslval ${UntransformedDir}/data/data pixdim1`
+    DiffRes=`printf "%0.2f" ${DiffRes}`
+    mkdir -p ${in_dir}_mean
 
-	GdFlag=0
-	echo ${in_dir}/grad_dev
-	if [ `imtest ${in_dir}/grad_dev` == "1" ] ; then
-		echo "Gradient nonlinearity distortion correction coefficients found!"
-		GdFlag=1
-	fi
+    GdFlag=0
+    echo ${in_dir}/grad_dev
+    if [ `imtest ${in_dir}/grad_dev` == "1" ] ; then
+            echo "Gradient nonlinearity distortion correction coefficients found!"
+            GdFlag=1
+    fi
 
-	${HCPPIPEDIR_dMRI}/DiffusionToStructural_apply.sh \
-		--t1folder="${T1wFolder}" \
-		--workingdir="${UntransformedDir}/reg" \
-		--datadiffdir="${UntransformedDir}/data" \
-		--t1restore="${T1wFolder}/T1w_acpc_dc_restore" \
-		--brainmask="${T1wFolder}/brainmask_fs" \
-		--datadiffT1wdir="${in_dir}_mean" \
-		--dof="${DegreesOfFreedom}" \
-		--gdflag=${GdFlag} \
-		--targetspace="mean" \
-		--diffresol=${DiffRes}
+    ${HCPPIPEDIR_dMRI}/DiffusionToStructural_apply.sh \
+            --t1folder="${T1wFolder}" \
+            --workingdir="${UntransformedDir}/reg" \
+            --datadiffdir="${UntransformedDir}/data" \
+            --t1restore="${T1wFolder}/T1w_acpc_dc_restore" \
+            --brainmask="${T1wFolder}/brainmask_fs" \
+            --datadiffT1wdir="${in_dir}_mean" \
+            --dof="${DegreesOfFreedom}" \
+            --gdflag=${GdFlag} \
+            --targetspace="mean" \
+            --diffresol=${DiffRes}
 done
 
 T1wRestoreImage="${T1wFolder}/T1w_acpc_dc_restore"

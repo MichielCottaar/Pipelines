@@ -292,8 +292,11 @@ validate_environment_vars()
 		error_msgs+="\nERROR: HCPPIPEDIR_dMRI/eddy_postproc.sh not found"
 	fi
 	
-	if [ ! -e ${HCPPIPEDIR_dMRI}/DiffusionToStructural.sh ] ; then
-		error_msgs+="\nERROR: HCPPIPEDIR_dMRI/DiffusionToStructural.sh not found"
+	if [ ! -e ${HCPPIPEDIR_dMRI}/DiffusionToStructural_register.sh ] ; then
+		error_msgs+="\nERROR: HCPPIPEDIR_dMRI/DiffusionToStructural_register.sh not found"
+	fi
+	if [ ! -e ${HCPPIPEDIR_dMRI}/DiffusionToStructural_apply.sh ] ; then
+		error_msgs+="\nERROR: HCPPIPEDIR_dMRI/DiffusionToStructural_apply.sh not found"
 	fi
 	
 	if [ -z ${FSLDIR} ] ; then

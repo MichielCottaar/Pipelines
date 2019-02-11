@@ -30,16 +30,16 @@ ${cmd}
 
 for dwi_name in ${InDWINames} ; do
     in_dir=${T1wFolder}/${dwi_name}
-    ${FSLDIR}/bin/flirt -in ${in_dir}/b0 -ref ${FinalDirectory}/ref_b0 -omat ${in_dir}/str2mean.mat -dof 6
+    mkdir -p ${in_dir}_mean
+    ${FSLDIR}/bin/flirt -in ${in_dir}/b0 -ref ${FinalDirectory}/ref_b0 -omat ${in_dir}_mean/str2mean.mat -dof 6
 
     # apply new transform to un-transformed diffusion data
-	UntransformedDir=${StudyFolder}/${Subject}/${dwi_name}
-    ${FSLDIR}/bin/convert_xfm -omat ${UntransformedDir}/reg/diff2mean.mat -concat ${UntransformedDir}/reg/diff2str.mat ${in_dir}/str2mean.mat
+    UntransformedDir=${StudyFolder}/${Subject}/${dwi_name}
+    ${FSLDIR}/bin/convert_xfm -omat ${UntransformedDir}/reg/diff2mean.mat -concat ${UntransformedDir}/reg/diff2str.mat ${in_dir}_mean/str2mean.mat
 
     echo "Applying transfomation to mean space for ${dwi_name}"
     DiffRes=`${FSLDIR}/bin/fslval ${UntransformedDir}/data/data pixdim1`
     DiffRes=`printf "%0.2f" ${DiffRes}`
-    mkdir -p ${in_dir}_mean
 
     GdFlag=0
     echo ${in_dir}/grad_dev
@@ -60,13 +60,6 @@ for dwi_name in ${InDWINames} ; do
             --targetspace="mean" \
             --diffresol=${DiffRes}
 done
-
-T1wRestoreImage="${T1wFolder}/T1w_acpc_dc_restore"
-FreeSurferBrainMask="${T1wFolder}/brainmask_fs"
-DiffRes=`${FSLDIR}/bin/fslval ${OutDirectory}/data/data pixdim1`
-DiffRes=`printf "%0.2f" ${DiffRes}`
-
-
 
 #
 # Merges the individual images
